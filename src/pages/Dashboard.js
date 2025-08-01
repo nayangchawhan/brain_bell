@@ -6,6 +6,7 @@ import '../styles/Dashboard.css'; // custom styling here
 import Navbar from '../components/Navbar';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { saveAs } from 'file-saver';
+import * as fontkit from 'fontkit';
 
 const Dashboard = () => {
   const [tests, setTests] = useState([]);
@@ -43,57 +44,51 @@ const Dashboard = () => {
 
 const handleDownloadPDF = async (test) => {
   const pdfDoc = await PDFDocument.create();
+
+  // ✅ Register fontkit before using custom fonts
+  pdfDoc.registerFontkit(fontkit);
+
   let page = pdfDoc.addPage();
   const { width, height } = page.getSize();
 
-  // ✅ Load Unicode font (make sure the font exists in /public/fonts)
+  // ✅ Load Unicode font
   const fontBytes = await fetch('/fonts/NotoSansDevanagari-Regular.ttf').then(res => res.arrayBuffer());
   const unicodeFont = await pdfDoc.embedFont(fontBytes);
 
   const fontSize = 12;
   let y = height - 40;
 
-  // Helper to add a new page
   const addNewPage = () => {
     page = pdfDoc.addPage();
     y = height - 40;
   };
 
-  // Title
   page.drawText(`Title: ${test.title || 'Untitled Test'}`, {
     x: 50, y, size: 16, font: unicodeFont,
   });
   y -= 30;
 
-  // Description
-  if (y < 60) addNewPage();
   page.drawText(`Description: ${test.description || 'N/A'}`, {
     x: 50, y, size: fontSize, font: unicodeFont,
   });
   y -= 25;
 
-  // Duration
-  if (y < 60) addNewPage();
   page.drawText(`Duration: ${test.duration || 'N/A'} minutes`, {
     x: 50, y, size: fontSize, font: unicodeFont,
   });
   y -= 30;
 
-  // Questions
   for (let index = 0; index < test.questions?.length; index++) {
     const q = test.questions[index];
-
     if (y < 80) addNewPage();
 
-    // Question text
     page.drawText(`Q${index + 1}. ${q.question}`, {
       x: 50, y, size: fontSize, font: unicodeFont,
     });
     y -= 20;
 
-    // Options
     for (let i = 0; i < q.options.length; i++) {
-      const label = String.fromCharCode(65 + i); // A, B, C, D...
+      const label = String.fromCharCode(65 + i);
       const isCorrect = q.correct === i;
       const optionText = `${label}. ${q.options[i]}${isCorrect ? ' (Correct)' : ''}`;
 
@@ -108,7 +103,6 @@ const handleDownloadPDF = async (test) => {
     y -= 10;
   }
 
-  // Save & Download
   const pdfBytes = await pdfDoc.save();
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
   saveAs(blob, `${test.title || 'test'}_questions.pdf`);
