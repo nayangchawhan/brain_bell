@@ -46,6 +46,7 @@ const AttendTest = () => {
         if (resultSnap.exists()) {
         const results = Object.values(resultSnap.val());
         const hasAttempted = results.some(result => result.userId === user.uid);
+        console.log("hasAttempted", hasAttempted);
 
         if (hasAttempted) {
             alert("You have already attended this test.");
