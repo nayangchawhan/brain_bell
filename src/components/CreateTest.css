@@ -1,0 +1,68 @@
+/* src/components/CreateTest.css */
+.create-test-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.create-test-container h2 {
+  text-align: center;
+  color: #6f42c1;
+  margin-bottom: 20px;
+}
+
+form input[type="text"],
+form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+textarea {
+  resize: vertical;
+  height: 100px;
+}
+
+.question-block {
+  margin-bottom: 24px;
+  border: 1px solid #e0e0e0;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+.option-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.option-input input[type="radio"] {
+  accent-color: #6f42c1;
+}
+
+.add-btn,
+.submit-btn {
+  display: block;
+  padding: 10px 20px;
+  margin: 20px auto;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #6f42c1;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.add-btn:hover,
+.submit-btn:hover {
+  background-color: #5a349e;
+}

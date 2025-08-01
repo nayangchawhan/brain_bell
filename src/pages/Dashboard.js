@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { auth, database } from '../firebase';
+import { auth, db } from '../firebase';
 import { ref, onValue } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 const Dashboard = () => {
   const [createdTests, setCreatedTests] = useState([]);
@@ -17,8 +18,8 @@ const Dashboard = () => {
 
     const userId = user.uid;
 
-    const testsRef = ref(database, 'tests/');
-    const attemptsRef = ref(database, 'attempts/');
+    const testsRef = ref(db, 'tests/');
+    const attemptsRef = ref(db, 'attempts/');
 
     // Fetch tests created by user
     onValue(testsRef, (snapshot) => {
@@ -44,6 +45,8 @@ const Dashboard = () => {
   }, [user, navigate]);
 
   return (
+    <div>
+        <Navbar/>
     <div style={{ padding: '40px', fontFamily: 'Segoe UI' }}>
       <h2>Welcome, {user?.displayName || user?.email}</h2>
 
@@ -76,6 +79,7 @@ const Dashboard = () => {
           <p>No test attempts found.</p>
         )}
       </section>
+    </div>
     </div>
   );
 };
