@@ -7,6 +7,9 @@ import Navbar from '../components/Navbar';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { saveAs } from 'file-saver';
 import * as fontkit from 'fontkit';
+import { CiEdit } from "react-icons/ci";
+import { MdDeleteOutline, MdOutlineFileDownload  } from "react-icons/md";
+import { FaRegShareSquare } from "react-icons/fa";
 
 const Dashboard = () => {
   const [tests, setTests] = useState([]);
@@ -206,11 +209,11 @@ const handleDownloadResults = async (test) => {
               <h3>{test.title || 'Untitled Test'}</h3>
               <p>{test.description}</p>
               <div className="test-actions">
-                <button onClick={() => handleEdit(test.id)}>✏️ Edit</button>
-                <button onClick={() => handleDelete(test.id)}>🗑️ Delete</button>
-                <button onClick={() => handleShare(test.id)}>🔗 Share</button>
-                <button onClick={() => handleDownloadPDF(test)}>📄 Download PDF</button>
-                <button onClick={() => handleDownloadResults(test)}>📥 Download Results</button>
+                <button onClick={() => handleEdit(test.id)}><CiEdit />Edit</button>
+                <button onClick={() => handleDelete(test.id)}><MdDeleteOutline /> Delete</button>
+                <button onClick={() => handleShare(test.id)}><FaRegShareSquare /> Share</button>
+                <button onClick={() => handleDownloadPDF(test)}><MdOutlineFileDownload /> Download PDF</button>
+                <button onClick={() => handleDownloadResults(test)}><MdOutlineFileDownload />Download Results</button>
               </div>
             </li>
           ))}
