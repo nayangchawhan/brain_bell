@@ -11,6 +11,8 @@ const AttendTest = () => {
   const [shuffledQuestions, setShuffledQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
+  const [started, setStarted] = useState(false);
+  const [attenderName, setAttenderName] = useState('');
   const navigate = useNavigate();
   const auth = getAuth();
   const user = auth.currentUser;
@@ -33,37 +35,77 @@ const AttendTest = () => {
         }
 
         if (testFound) {
-          const questions = [...testFound.questions];
-          const shuffled = questions
-            .sort(() => 0.5 - Math.random())
-            .slice(0, parseInt(testFound.minQuestions || questions.length));
-
           setTest(testFound);
-          setShuffledQuestions(shuffled);
-          setTimeLeft(parseInt(testFound.duration || 10) * 60); // Fixed: parseInt
         }
       }
     };
 
     fetchTest();
+
+    // Prevent right-click and reload
+    const handleContextMenu = e => e.preventDefault();
+    const handleBeforeUnload = e => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    const handleKeyDown = e => {
+      if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+        e.preventDefault();
+      }
+    };
+    const handlePopState = () => {
+      alert("Back navigation is disabled during the test.");
+      window.history.pushState(null, null, window.location.pathname);
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('keydown', handleKeyDown);
+    window.history.pushState(null, null, window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [testId]);
 
   useEffect(() => {
-    if (timeLeft <= 0 && test) {
+    if (timeLeft <= 0 && test && started) {
       handleSubmit();
       return;
     }
     const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
+      if (started) setTimeLeft(prev => prev - 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, test]);
+  }, [timeLeft, test, started]);
+
+  const startTest = () => {
+    if (!attenderName.trim()) {
+      alert("Please enter your name to begin.");
+      return;
+    }
+
+    const questions = [...test.questions];
+    const shuffled = questions
+      .sort(() => 0.5 - Math.random())
+      .slice(0, parseInt(test.minQuestions || questions.length));
+
+    setShuffledQuestions(shuffled);
+    setTimeLeft(parseInt(test.duration || 10) * 60);
+    setStarted(true);
+  };
 
   const handleOptionChange = (index, optionIndex) => {
     setAnswers(prev => ({ ...prev, [index]: optionIndex }));
   };
 
   const handleSubmit = async () => {
+    if (!started) return;
+
     const total = shuffledQuestions.length;
     let score = 0;
 
@@ -74,6 +116,7 @@ const AttendTest = () => {
     });
 
     const resultData = {
+      attenderName,
       userId: user?.uid || "anonymous",
       userEmail: user?.email || "anonymous",
       testId,
@@ -83,7 +126,6 @@ const AttendTest = () => {
       submittedAt: Date.now()
     };
 
-    // Save to /results/{testId}/{userId or pushKey}
     const resultRef = ref(db, `results/${testId}`);
     const newResultRef = push(resultRef);
     await set(newResultRef, resultData);
@@ -102,31 +144,48 @@ const AttendTest = () => {
 
   return (
     <div className="attend-container">
-      <div className="attend-header">
-        <h2>{test.title}</h2>
-        <div className="timer">🕒 Time Left: {formatTime(timeLeft)}</div>
-      </div>
-      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-        {shuffledQuestions.map((q, i) => (
-          <div className="question-block" key={i}>
-            <p className="question">Q{i + 1}: {q.question}</p>
-            <div className="options">
-              {q.options.map((opt, j) => (
-                <label key={j} className="option">
-                  <input
-                    type="radio"
-                    name={`question-${i}`}
-                    checked={answers[i] === j}
-                    onChange={() => handleOptionChange(i, j)}
-                  />
-                  {String.fromCharCode(65 + j)}. {opt}
-                </label>
-              ))}
-            </div>
+      {!started ? (
+        <div className="start-screen">
+          <h2>{test.title}</h2>
+          <input
+            type="text"
+            placeholder="Enter your name"
+            value={attenderName}
+            onChange={(e) => setAttenderName(e.target.value)}
+            required
+          />
+          <button className="start-btn" onClick={startTest}>Start Test</button>
+        </div>
+      ) : (
+        <>
+          <div className="attend-header">
+            <h2>{test.title}</h2>
+            <div className="timer">🕒 Time Left: {formatTime(timeLeft)}</div>
+            <p>Attender: <strong>{attenderName}</strong></p>
           </div>
-        ))}
-        <button type="submit" className="submit-btn">Submit Test</button>
-      </form>
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+            {shuffledQuestions.map((q, i) => (
+              <div className="question-block" key={i}>
+                <p className="question">Q{i + 1}: {q.question}</p>
+                <div className="options">
+                  {q.options.map((opt, j) => (
+                    <label key={j} className="option">
+                      <input
+                        type="radio"
+                        name={`question-${i}`}
+                        checked={answers[i] === j}
+                        onChange={() => handleOptionChange(i, j)}
+                      />
+                      {String.fromCharCode(65 + j)}. {opt}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <button type="submit" className="submit-btn">Submit Test</button>
+          </form>
+        </>
+      )}
     </div>
   );
 };
