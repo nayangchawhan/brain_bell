@@ -1,130 +1,132 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { ref, onValue, push } from 'firebase/database';
+import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
+import { ref, get, push, set } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
+import '../styles/AttendTest.css';
 
 const AttendTest = () => {
   const { testId } = useParams();
   const [test, setTest] = useState(null);
-  const [name, setName] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [questions, setQuestions] = useState([]);
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(null);
-  const [showStart, setShowStart] = useState(true);
-
-  // Disable Right-click, F12, Reload
-  useEffect(() => {
-    const disable = (e) => e.preventDefault();
-
-    const keyBlocker = (e) => {
-      if (['F12', 'F5'].includes(e.key) || (e.ctrlKey && e.key === 'r')) e.preventDefault();
-    };
-
-    document.addEventListener('contextmenu', disable);
-    window.addEventListener('keydown', keyBlocker);
-
-    return () => {
-      document.removeEventListener('contextmenu', disable);
-      window.removeEventListener('keydown', keyBlocker);
-    };
-  }, []);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const navigate = useNavigate();
+  const auth = getAuth();
+  const user = auth.currentUser;
 
   useEffect(() => {
-    const testRef = ref(db, `tests/${testId}`);
-    onValue(testRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) setTest(data);
-    });
+    const fetchTest = async () => {
+      const snapshot = await get(ref(db, 'tests'));
+      if (snapshot.exists()) {
+        const allTests = snapshot.val();
+        let testFound = null;
+
+        for (const userTests of Object.values(allTests)) {
+          for (const [id, testData] of Object.entries(userTests)) {
+            if (id === testId) {
+              testFound = testData;
+              break;
+            }
+          }
+          if (testFound) break;
+        }
+
+        if (testFound) {
+          const questions = [...testFound.questions];
+          const shuffled = questions
+            .sort(() => 0.5 - Math.random())
+            .slice(0, parseInt(testFound.minQuestions || questions.length));
+
+          setTest(testFound);
+          setShuffledQuestions(shuffled);
+          setTimeLeft(parseInt(testFound.duration || 10) * 60); // Fixed: parseInt
+        }
+      }
+    };
+
+    fetchTest();
   }, [testId]);
 
   useEffect(() => {
-    if (timeLeft === 0 && !submitted) handleSubmit();
-    if (timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
+    if (timeLeft <= 0 && test) {
+      handleSubmit();
+      return;
     }
-  }, [timeLeft]);
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft, test]);
 
-  const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
-
-  const startTest = () => {
-    const total = parseInt(test.minQuestions || test.questions.length);
-    const randomQ = shuffle(test.questions).slice(0, total);
-    setQuestions(randomQ);
-    setTimeLeft(parseInt(test.duration) * 60);
-    setShowStart(false);
+  const handleOptionChange = (index, optionIndex) => {
+    setAnswers(prev => ({ ...prev, [index]: optionIndex }));
   };
 
-  const handleOptionChange = (qIndex, selectedIndex) => {
-    setAnswers((prev) => ({ ...prev, [qIndex]: selectedIndex }));
-  };
-
-  const handleSubmit = () => {
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    const total = shuffledQuestions.length;
     let score = 0;
-    questions.forEach((q, idx) => {
-      if (parseInt(q.correct) === answers[idx]) score++;
+
+    shuffledQuestions.forEach((q, i) => {
+      if (parseInt(q.correct) === answers[i]) {
+        score++;
+      }
     });
 
     const resultData = {
-      name,
+      userId: user?.uid || "anonymous",
+      userEmail: user?.email || "anonymous",
       testId,
       score,
-      total: questions.length,
-      submittedAt: Date.now(),
+      total,
       answers,
-      questions,
+      submittedAt: Date.now()
     };
 
-    const resultRef = ref(db, `results/${test.createdBy}/${testId}`);
-    push(resultRef, resultData);
+    // Save to /results/{testId}/{userId or pushKey}
+    const resultRef = ref(db, `results/${testId}`);
+    const newResultRef = push(resultRef);
+    await set(newResultRef, resultData);
+
+    alert(`Test Submitted!\nScore: ${score}/${total}`);
+    navigate('/');
   };
 
-  if (!test) return <p>Loading test...</p>;
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  if (!test) return <div className="attend-container">Loading test...</div>;
 
   return (
     <div className="attend-container">
-      {showStart ? (
-        <div className="start-screen">
-          <h2>{test.title}</h2>
-          <p>{test.description}</p>
-          <input
-            type="text"
-            placeholder="Enter Your Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <button disabled={!name.trim()} onClick={startTest}>Start Test</button>
-        </div>
-      ) : submitted ? (
-        <div className="submitted-msg">
-          <h3>Test Submitted ✅</h3>
-          <p>Thank you, <strong>{name}</strong>! Your score is {questions.filter((q, i) => q.correct === answers[i]).length}/{questions.length}</p>
-        </div>
-      ) : (
-        <div className="question-box">
-          <div className="timer">⏰ {Math.floor(timeLeft / 60)}:{('0' + (timeLeft % 60)).slice(-2)}</div>
-          {questions.map((q, idx) => (
-            <div key={idx} className="question">
-              <p><strong>Q{idx + 1}:</strong> {q.question}</p>
-              {q.options.map((opt, i) => (
-                <label key={i}>
+      <div className="attend-header">
+        <h2>{test.title}</h2>
+        <div className="timer">🕒 Time Left: {formatTime(timeLeft)}</div>
+      </div>
+      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+        {shuffledQuestions.map((q, i) => (
+          <div className="question-block" key={i}>
+            <p className="question">Q{i + 1}: {q.question}</p>
+            <div className="options">
+              {q.options.map((opt, j) => (
+                <label key={j} className="option">
                   <input
                     type="radio"
-                    name={`q${idx}`}
-                    checked={answers[idx] === i}
-                    onChange={() => handleOptionChange(idx, i)}
+                    name={`question-${i}`}
+                    checked={answers[i] === j}
+                    onChange={() => handleOptionChange(i, j)}
                   />
-                  {opt}
+                  {String.fromCharCode(65 + j)}. {opt}
                 </label>
               ))}
             </div>
-          ))}
-          <button className="submit-btn" onClick={handleSubmit}>Submit</button>
-        </div>
-      )}
+          </div>
+        ))}
+        <button type="submit" className="submit-btn">Submit Test</button>
+      </form>
     </div>
   );
 };
