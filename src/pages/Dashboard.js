@@ -45,6 +45,9 @@ const Dashboard = () => {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage();
   const { width, height } = page.getSize();
+  // 👇 Load Unicode font (ensure the path is correct)
+  const fontBytes = await fetch('/fonts/NotoSansDevanagari-Regular.ttf').then(res => res.arrayBuffer());
+  const unicodeFont = await pdfDoc.embedFont(fontBytes);
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontSize = 12;
@@ -105,6 +108,9 @@ const handleDownloadResults = async (test) => {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage();
   const { width, height } = page.getSize();
+    //Load Unicode font (ensure the path is correct)
+  const fontBytes = await fetch('/fonts/NotoSansDevanagari-Regular.ttf').then(res => res.arrayBuffer());
+  const unicodeFont = await pdfDoc.embedFont(fontBytes);
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontSize = 12;
