@@ -52,7 +52,7 @@ const handleDownloadPDF = async (test) => {
   const { width, height } = page.getSize();
 
   // ✅ Load Unicode font
-  const fontBytes = await fetch('/fonts/NotoSans.ttf').then(res => res.arrayBuffer());
+  const fontBytes = await fetch('/fonts/NotoSansDevanagari-Regular.ttf').then(res => res.arrayBuffer());
   const unicodeFont = await pdfDoc.embedFont(fontBytes);
 
   const fontSize = 12;
