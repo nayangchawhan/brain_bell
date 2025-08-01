@@ -13,31 +13,46 @@ const AttendTest = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [started, setStarted] = useState(false);
   const [attenderName, setAttenderName] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
   const auth = getAuth();
   const user = auth.currentUser;
 
   useEffect(() => {
     const fetchTest = async () => {
-      const snapshot = await get(ref(db, 'tests'));
-      if (snapshot.exists()) {
+    const snapshot = await get(ref(db, 'tests'));
+    if (snapshot.exists()) {
         const allTests = snapshot.val();
         let testFound = null;
 
         for (const userTests of Object.values(allTests)) {
-          for (const [id, testData] of Object.entries(userTests)) {
+        for (const [id, testData] of Object.entries(userTests)) {
             if (id === testId) {
-              testFound = testData;
-              break;
+            testFound = testData;
+            break;
             }
-          }
-          if (testFound) break;
+        }
+        if (testFound) break;
         }
 
         if (testFound) {
-          setTest(testFound);
+        setTest(testFound);
         }
-      }
+    }
+
+    // Check if this user already submitted this test
+    if (user) {
+        const resultSnap = await get(ref(db, `results/${testId}`));
+        if (resultSnap.exists()) {
+        const results = Object.values(resultSnap.val());
+        const hasAttempted = results.some(result => result.userId === user.uid);
+
+        if (hasAttempted) {
+            alert("You have already attended this test.");
+            navigate('/');
+        }
+        }
+    }
     };
 
     fetchTest();
@@ -103,36 +118,37 @@ const AttendTest = () => {
     setAnswers(prev => ({ ...prev, [index]: optionIndex }));
   };
 
-  const handleSubmit = async () => {
-    if (!started) return;
+const handleSubmit = async () => {
+  if (!started || submitted) return; // Prevent double submission
+  setSubmitted(true); // Disable further submissions immediately
 
-    const total = shuffledQuestions.length;
-    let score = 0;
+  const total = shuffledQuestions.length;
+  let score = 0;
 
-    shuffledQuestions.forEach((q, i) => {
-      if (parseInt(q.correct) === answers[i]) {
-        score++;
-      }
-    });
+  shuffledQuestions.forEach((q, i) => {
+    if (parseInt(q.correct) === answers[i]) {
+      score++;
+    }
+  });
 
-    const resultData = {
-      attenderName,
-      userId: user?.uid || "anonymous",
-      userEmail: user?.email || "anonymous",
-      testId,
-      score,
-      total,
-      answers,
-      submittedAt: Date.now()
-    };
-
-    const resultRef = ref(db, `results/${testId}`);
-    const newResultRef = push(resultRef);
-    await set(newResultRef, resultData);
-
-    alert(`Test Submitted!\nScore: ${score}/${total}`);
-    navigate('/');
+  const resultData = {
+    attenderName,
+    userId: user?.uid || "anonymous",
+    userEmail: user?.email || "anonymous",
+    testId,
+    score,
+    total,
+    answers,
+    submittedAt: Date.now()
   };
+
+  const resultRef = ref(db, `results/${testId}`);
+  const newResultRef = push(resultRef);
+  await set(newResultRef, resultData);
+
+  alert(`Test Submitted!\nScore: ${score}/${total}`);
+  navigate('/');
+};
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
