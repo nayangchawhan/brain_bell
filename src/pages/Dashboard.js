@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../firebase';
-import { ref, onValue, remove } from 'firebase/database';
+import { ref as dbRef, onValue, remove, get, ref } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Dashboard.css'; // custom styling here
 import Navbar from '../components/Navbar';
@@ -84,6 +84,61 @@ const Dashboard = () => {
   saveAs(blob, `${test.title || 'test'}_questions.pdf`);
 };
 
+const handleDownloadResults = async (test) => {
+  const testId = typeof test === "string" ? test : test.id;
+
+  if (!testId) {
+    alert("Invalid test ID");
+    return;
+  }
+
+  const resultsRef = ref(db, `results/${testId}`);
+  const snapshot = await get(resultsRef);
+
+  if (!snapshot.exists()) {
+    alert("No results found for this test");
+    return;
+  }
+
+  const resultsData = snapshot.val();
+
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage();
+  const { width, height } = page.getSize();
+
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontSize = 12;
+
+  let y = height - 40;
+  page.drawText(`Test Results: ${test.title || 'Untitled Test'}`, { x: 50, y, size: 16, font });
+  y -= 30;
+
+  // Table Headers
+  page.drawText("No", { x: 50, y, size: fontSize, font });
+  page.drawText("Attender", { x: 90, y, size: fontSize, font });
+  page.drawText("Obtained", { x: 300, y, size: fontSize, font });
+  page.drawText("Total", { x: 400, y, size: fontSize, font });
+  y -= 20;
+
+  Object.values(resultsData).forEach((result, index) => {
+    if (y < 50) {
+      const newPage = pdfDoc.addPage();
+      y = height - 40;
+    }
+
+    page.drawText(`${index + 1}`, { x: 50, y, size: fontSize, font });
+    page.drawText(`${result.attenderName || 'N/A'}`, { x: 90, y, size: fontSize, font });
+    page.drawText(`${result.score}`, { x: 300, y, size: fontSize, font });
+    page.drawText(`${result.total}`, { x: 400, y, size: fontSize, font });
+
+    y -= 18;
+  });
+
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  saveAs(blob, `${test.title || 'test'}_results.pdf`);
+};
+
   const handleShare = (testId) => {
     const link = `${window.location.origin}/attend-test/${testId}`;
     navigator.clipboard.writeText(link);
@@ -108,6 +163,7 @@ const Dashboard = () => {
                 <button onClick={() => handleDelete(test.id)}>🗑️ Delete</button>
                 <button onClick={() => handleShare(test.id)}>🔗 Share</button>
                 <button onClick={() => handleDownloadPDF(test)}>📄 Download PDF</button>
+                <button onClick={() => handleDownloadResults(test)}>📥 Download Results</button>
               </div>
             </li>
           ))}

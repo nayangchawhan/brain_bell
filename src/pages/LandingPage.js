@@ -11,8 +11,8 @@ const LandingPage = () => {
         <h1>Welcome to BrainBell</h1>
         <p>Empowering Learning with Smart Tests</p>
         <div className="buttons">
-          <button onClick={() => navigate('/login')}>Creator Login</button>
-          <button onClick={() => navigate('/login')}>Student Login</button>
+          <button onClick={() => navigate('/login')}>Get Started</button>
+          {/* <button onClick={() => navigate('/login')}>Student Login</button> */}
         </div>
       </div>
     </div>
