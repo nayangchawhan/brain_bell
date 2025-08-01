@@ -18,75 +18,77 @@ const AttendTest = () => {
   const auth = getAuth();
   const user = auth.currentUser;
 
-  useEffect(() => {
-    const fetchTest = async () => {
+useEffect(() => {
+  const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+    if (!firebaseUser) {
+      alert("You must be logged in to attend the test.");
+      navigate('/');
+      return;
+    }
+
     const snapshot = await get(ref(db, 'tests'));
     if (snapshot.exists()) {
-        const allTests = snapshot.val();
-        let testFound = null;
+      const allTests = snapshot.val();
+      let testFound = null;
 
-        for (const userTests of Object.values(allTests)) {
+      for (const userTests of Object.values(allTests)) {
         for (const [id, testData] of Object.entries(userTests)) {
-            if (id === testId) {
+          if (id === testId) {
             testFound = testData;
             break;
-            }
+          }
         }
         if (testFound) break;
-        }
-
-        if (testFound) {
-        setTest(testFound);
-        }
-    }
-
-    // Check if this user already submitted this test
-    if (user) {
-        const resultSnap = await get(ref(db, `results/${testId}`));
-        if (resultSnap.exists()) {
-        const results = Object.values(resultSnap.val());
-        const hasAttempted = results.some(result => result.userId === user.uid);
-        console.log("hasAttempted", hasAttempted);
-
-        if (hasAttempted) {
-            alert("You have already attended this test.");
-            navigate('/');
-        }
-        }
-    }
-    };
-
-    fetchTest();
-
-    // Prevent right-click and reload
-    const handleContextMenu = e => e.preventDefault();
-    const handleBeforeUnload = e => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    const handleKeyDown = e => {
-      if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
-        e.preventDefault();
       }
-    };
-    const handlePopState = () => {
-      alert("Back navigation is disabled during the test.");
-      window.history.pushState(null, null, window.location.pathname);
-    };
 
-    window.addEventListener('contextmenu', handleContextMenu);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('keydown', handleKeyDown);
+      if (testFound) {
+        setTest(testFound);
+      }
+    }
+
+    // ✅ Properly check if this user has already submitted
+    const resultSnap = await get(ref(db, `results/${testId}`));
+    if (resultSnap.exists()) {
+      const results = Object.values(resultSnap.val());
+      const hasAttempted = results.some(result => result.userId === firebaseUser.uid);
+      if (hasAttempted) {
+        alert("You have already attended this test.");
+        navigate('/');
+      }
+    }
+  });
+
+  // Prevent right-click, reload, and back navigation
+  const handleContextMenu = e => e.preventDefault();
+  const handleBeforeUnload = e => {
+    e.preventDefault();
+    e.returnValue = '';
+  };
+  const handleKeyDown = e => {
+    if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+      e.preventDefault();
+    }
+  };
+  const handlePopState = () => {
+    alert("Back navigation is disabled during the test.");
     window.history.pushState(null, null, window.location.pathname);
-    window.addEventListener('popstate', handlePopState);
+  };
 
-    return () => {
-      window.removeEventListener('contextmenu', handleContextMenu);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [testId]);
+  window.addEventListener('contextmenu', handleContextMenu);
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('keydown', handleKeyDown);
+  window.history.pushState(null, null, window.location.pathname);
+  window.addEventListener('popstate', handlePopState);
+
+  return () => {
+    unsubscribe();
+    window.removeEventListener('contextmenu', handleContextMenu);
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('popstate', handlePopState);
+  };
+}, [testId, auth, navigate]);
+
 
   useEffect(() => {
     if (timeLeft <= 0 && test && started) {
