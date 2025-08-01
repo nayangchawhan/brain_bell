@@ -1,0 +1,51 @@
+.attend-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.start-screen input {
+  width: 100%;
+  padding: 10px;
+  margin: 12px 0;
+}
+
+.start-screen button {
+  padding: 10px 20px;
+  background: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+.timer {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #e74c3c;
+}
+
+.question {
+  margin: 20px 0;
+  background: #f8f8f8;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.question p {
+  margin: 10px 0;
+}
+
+.question label {
+  display: block;
+  margin-left: 15px;
+}
+
+.submit-btn {
+  padding: 10px 20px;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}

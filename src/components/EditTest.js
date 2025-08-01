@@ -1,141 +1,164 @@
-// src/components/CreateTest.js
-import React, { useState } from 'react';
-import './CreateTest.css';
-import { db, auth } from '../firebase';
-import { ref, push } from 'firebase/database';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getDatabase, ref, get, update } from 'firebase/database';
+import Navbar from './Navbar';
+import "./EditTest.css";
 
-const CreateTest = () => {
-  const [testTitle, setTestTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [duration, setDuration] = useState('');
-  const [minQuestions, setMinQuestions] = useState('');
-  const [questions, setQuestions] = useState([
-    { question: '', options: ['', '', '', ''], correct: 0 }
-  ]);
+const EditTest = () => {
+  const { testId } = useParams();
+  const navigate = useNavigate();
+  const [test, setTest] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleQuestionChange = (index, field, value) => {
-    const newQuestions = [...questions];
+  useEffect(() => {
+    const fetchTest = async () => {
+      try {
+        const db = getDatabase();
+        const testsRef = ref(db, 'tests');
+        const snapshot = await get(testsRef);
+
+        if (snapshot.exists()) {
+          const allTests = snapshot.val();
+
+          let foundTest = null;
+          let createdBy = null;
+
+          for (const userId in allTests) {
+            if (allTests[userId][testId]) {
+              foundTest = allTests[userId][testId];
+              createdBy = userId;
+              break;
+            }
+          }
+
+          if (foundTest && createdBy) {
+            setTest({ ...foundTest, id: testId, createdBy });
+          } else {
+            alert('Test not found!');
+          }
+        } else {
+          alert('No tests found in the database.');
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching test:', err);
+        setLoading(false);
+      }
+    };
+
+    fetchTest();
+  }, [testId]);
+
+  const handleInputChange = (e, questionIndex, field, optionIndex = null) => {
+    const updatedQuestions = [...test.questions];
+
     if (field === 'question') {
-      newQuestions[index].question = value;
-    } else {
-      newQuestions[index].options[field] = value;
+      updatedQuestions[questionIndex].question = e.target.value;
+    } else if (field === 'correct') {
+      updatedQuestions[questionIndex].correct = Number(e.target.value);
+    } else if (field === 'option') {
+      updatedQuestions[questionIndex].options[optionIndex] = e.target.value;
     }
-    setQuestions(newQuestions);
-  };
 
-  const handleCorrectOptionChange = (index, correctIndex) => {
-    const newQuestions = [...questions];
-    newQuestions[index].correct = correctIndex;
-    setQuestions(newQuestions);
+    setTest({ ...test, questions: updatedQuestions });
   };
 
   const addQuestion = () => {
-    setQuestions([...questions, { question: '', options: ['', '', '', ''], correct: 0 }]);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const uid = auth.currentUser?.uid;
-    if (!uid) return alert("Please login first");
-
-    if (parseInt(minQuestions) > questions.length) {
-      alert("Minimum number of questions cannot be more than total questions");
-      return;
-    }
-
-    const testData = {
-      title: testTitle,
-      description,
-      duration,
-      minQuestions: parseInt(minQuestions),
-      questions,
-      createdBy: uid,
-      createdAt: Date.now()
+    const newQuestion = {
+      question: '',
+      options: ['', '', '', ''],
+      correct: 0
     };
-
-    await push(ref(db, `tests/${uid}`), testData);
-    alert("Test created successfully!");
-    
-    // Reset form
-    setTestTitle('');
-    setDescription('');
-    setDuration('');
-    setMinQuestions('');
-    setQuestions([{ question: '', options: ['', '', '', ''], correct: 0 }]);
+    setTest({ ...test, questions: [...test.questions, newQuestion] });
   };
+
+  const deleteQuestion = (index) => {
+    const updatedQuestions = test.questions.filter((_, i) => i !== index);
+    setTest({ ...test, questions: updatedQuestions });
+  };
+
+  const addOption = (qIndex) => {
+    const updatedQuestions = [...test.questions];
+    updatedQuestions[qIndex].options.push('');
+    setTest({ ...test, questions: updatedQuestions });
+  };
+
+  const deleteOption = (qIndex, optIndex) => {
+    const updatedQuestions = [...test.questions];
+    updatedQuestions[qIndex].options.splice(optIndex, 1);
+    setTest({ ...test, questions: updatedQuestions });
+  };
+
+  const handleSave = () => {
+    const db = getDatabase();
+    const testRef = ref(db, `tests/${test.createdBy}/${testId}`);
+
+    update(testRef, {
+      ...test
+    })
+      .then(() => {
+        alert('Test updated successfully!');
+        navigate('/dashboard');
+      })
+      .catch((err) => {
+        console.error('Error updating test:', err);
+        alert('Failed to update test');
+      });
+  };
+
+  if (loading) return <p>Loading...</p>;
+  if (!test) return <p>No test found.</p>;
 
   return (
-    <div className="create-test-container">
-      <h2>Create a New Test</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Test Title"
-          value={testTitle}
-          onChange={(e) => setTestTitle(e.target.value)}
-          required
-        />
-        <textarea
-          placeholder="Test Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-        />
-        <input
-          type="number"
-          placeholder="Test Duration in minutes"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          required
-        />
-        <input
-          type="number"
-          placeholder="Minimum Questions to be Asked"
-          value={minQuestions}
-          onChange={(e) => setMinQuestions(e.target.value)}
-          required
-        />
-
-        {questions.map((q, i) => (
-          <div className="question-block" key={i}>
+    <div>
+      <Navbar />
+      <div className="edit-test-container">
+        <h2>Edit Test</h2>
+        {test.questions.map((q, i) => (
+          <div key={i} className="question-block">
+            <label>Question {i + 1}</label>
             <input
               type="text"
-              placeholder={`Question ${i + 1}`}
               value={q.question}
-              onChange={(e) => handleQuestionChange(i, 'question', e.target.value)}
-              required
+              onChange={(e) => handleInputChange(e, i, 'question')}
             />
+
             {q.options.map((opt, j) => (
-              <div key={j} className="option-input">
+              <div key={j} className="option-row">
                 <input
                   type="text"
-                  placeholder={`Option ${j + 1}`}
                   value={opt}
-                  onChange={(e) => handleQuestionChange(i, j, e.target.value)}
-                  required
+                  onChange={(e) => handleInputChange(e, i, 'option', j)}
                 />
-                <input
-                  type="radio"
-                  name={`correct-${i}`}
-                  checked={q.correct === j}
-                  onChange={() => handleCorrectOptionChange(i, j)}
-                  title="Correct answer"
-                />
+                {q.options.length > 2 && (
+                  <button onClick={() => deleteOption(i, j)}>❌</button>
+                )}
               </div>
             ))}
+
+            <button onClick={() => addOption(i)}>➕ Add Option</button>
+
+            <label>Correct Option (Index: 0-based)</label>
+            <input
+              type="number"
+              value={q.correct}
+              onChange={(e) => handleInputChange(e, i, 'correct')}
+              min="0"
+              max={q.options.length - 1}
+            />
+
+            <button className="delete-btn" onClick={() => deleteQuestion(i)}>🗑️ Delete Question</button>
+            <hr />
           </div>
         ))}
 
-        <button type="button" className="add-btn" onClick={addQuestion}>
-          ➕ Add Question
-        </button>
-
-        <button type="submit" className="submit-btn">
-          ✅ Create Test
-        </button>
-      </form>
+        <button className="add-btn" onClick={addQuestion}>➕ Add New Question</button>
+        <br />
+        <button className="save-btn" onClick={handleSave}>💾 Save Changes</button>
+      </div>
     </div>
   );
 };
 
-export default CreateTest;
+export default EditTest;

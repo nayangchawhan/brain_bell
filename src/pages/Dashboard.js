@@ -4,11 +4,12 @@ import { ref, onValue, remove } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Dashboard.css'; // custom styling here
 import Navbar from '../components/Navbar';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { saveAs } from 'file-saver';
 
 const Dashboard = () => {
   const [tests, setTests] = useState([]);
   const navigate = useNavigate();
-
   const currentUser = auth.currentUser;
 
   useEffect(() => {
@@ -40,6 +41,49 @@ const Dashboard = () => {
     navigate(`/edit-test/${testId}`);
   };
 
+  const handleDownloadPDF = async (test) => {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage();
+  const { width, height } = page.getSize();
+
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontSize = 12;
+
+  let y = height - 40;
+  page.drawText(`Title: ${test.title || 'Untitled Test'}`, { x: 50, y, size: 16, font });
+
+  y -= 30;
+  page.drawText(`Description: ${test.description || 'N/A'}`, { x: 50, y, size: fontSize, font });
+
+  y -= 25;
+  page.drawText(`Duration: ${test.duration || 'N/A'} minutes`, { x: 50, y, size: fontSize, font });
+
+  y -= 30;
+
+  test.questions?.forEach((q, index) => {
+    if (y < 80) {
+      page = pdfDoc.addPage();
+      y = height - 40;
+    }
+
+    page.drawText(`Q${index + 1}. ${q.question}`, { x: 50, y, size: fontSize, font });
+    y -= 20;
+
+    q.options.forEach((opt, i) => {
+      const label = String.fromCharCode(65 + i); // A, B, C, D...
+      const isCorrect = q.correct === i;
+      page.drawText(`${label}. ${opt} ${isCorrect ? '(C)' : ''}`, { x: 70, y, size: fontSize, font });
+      y -= 18;
+    });
+
+    y -= 10;
+  });
+
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  saveAs(blob, `${test.title || 'test'}_questions.pdf`);
+};
+
   const handleShare = (testId) => {
     const link = `${window.location.origin}/attend-test/${testId}`;
     navigator.clipboard.writeText(link);
@@ -63,6 +107,7 @@ const Dashboard = () => {
                 <button onClick={() => handleEdit(test.id)}>✏️ Edit</button>
                 <button onClick={() => handleDelete(test.id)}>🗑️ Delete</button>
                 <button onClick={() => handleShare(test.id)}>🔗 Share</button>
+                <button onClick={() => handleDownloadPDF(test)}>📄 Download PDF</button>
               </div>
             </li>
           ))}
