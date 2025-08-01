@@ -7,23 +7,30 @@ import '../styles/Auth.css';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // 🔒 Loading state
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+    setLoading(true); // 🔒 Start loading
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/dashboard');
     } catch (err) {
       alert(err.message);
+    } finally {
+      setLoading(false); // 🔓 End loading
     }
   };
 
   const handleGoogleLogin = async () => {
+    setLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
       navigate('/dashboard');
     } catch (err) {
       alert(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,16 +42,24 @@ const Login = () => {
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        disabled={loading}
       /><br />
       <input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        disabled={loading}
       /><br />
-      <button onClick={handleLogin}>Login</button>
-      <button onClick={handleGoogleLogin}>Sign in with Google</button>
-      <p onClick={() => navigate('/signup')}>Don't have an account? Sign up</p>
+      <button onClick={handleLogin} disabled={loading}>
+        {loading ? 'Logging in...' : 'Login'}
+      </button>
+      <button onClick={handleGoogleLogin} disabled={loading}>
+        {loading ? 'Please wait...' : 'Sign in with Google'}
+      </button>
+      <p onClick={() => !loading && navigate('/signup')}>
+        Don't have an account? Sign up
+      </p>
     </div>
   );
 };
