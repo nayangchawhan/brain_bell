@@ -1,84 +1,73 @@
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../firebase';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, remove } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
+import '../styles/Dashboard.css'; // custom styling here
 import Navbar from '../components/Navbar';
 
 const Dashboard = () => {
-  const [createdTests, setCreatedTests] = useState([]);
-  const [attendedTests, setAttendedTests] = useState([]);
+  const [tests, setTests] = useState([]);
   const navigate = useNavigate();
-  const user = auth.currentUser;
+
+  const currentUser = auth.currentUser;
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+    if (!currentUser) return;
 
-    const userId = user.uid;
+    const testRef = ref(db, 'tests/' + currentUser.uid);
 
-    const testsRef = ref(db, 'tests/');
-    const attemptsRef = ref(db, 'attempts/');
-
-    // Fetch tests created by user
-    onValue(testsRef, (snapshot) => {
+    onValue(testRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const filtered = Object.entries(data)
-          .filter(([_, val]) => val.createdBy === userId)
-          .map(([key, val]) => ({ id: key, ...val }));
-        setCreatedTests(filtered);
+        const testArray = Object.entries(data).map(([key, value]) => ({
+          id: key,
+          ...value,
+        }));
+        setTests(testArray);
+      } else {
+        setTests([]);
       }
     });
+  }, [currentUser]);
 
-    // Fetch attempts by user
-    onValue(attemptsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const filtered = Object.entries(data)
-          .filter(([_, val]) => val.userId === userId)
-          .map(([key, val]) => ({ id: key, ...val }));
-        setAttendedTests(filtered);
-      }
-    });
-  }, [user, navigate]);
+  const handleDelete = (testId) => {
+    if (!currentUser) return;
+    const testRef = ref(db, `tests/${currentUser.uid}/${testId}`);
+    remove(testRef);
+  };
+
+  const handleEdit = (testId) => {
+    navigate(`/edit-test/${testId}`);
+  };
+
+  const handleShare = (testId) => {
+    const link = `${window.location.origin}/attend-test/${testId}`;
+    navigator.clipboard.writeText(link);
+    alert('Test link copied to clipboard!');
+  };
 
   return (
     <div>
-        <Navbar/>
-    <div style={{ padding: '40px', fontFamily: 'Segoe UI' }}>
-      <h2>Welcome, {user?.displayName || user?.email}</h2>
-
-      <section>
-        <h3 style={{ color: '#6f42c1' }}>📚 Tests Created By You</h3>
-        {createdTests.length ? (
-          <ul>
-            {createdTests.map(test => (
-              <li key={test.id}>
-                <strong>{test.title}</strong> - {test.description}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No tests created.</p>
-        )}
-      </section>
-
-      <section>
-        <h3 style={{ color: '#6f42c1' }}>📝 Tests You Have Attended</h3>
-        {attendedTests.length ? (
-          <ul>
-            {attendedTests.map(attempt => (
-              <li key={attempt.id}>
-                <strong>{attempt.testTitle}</strong> - Score: {attempt.score}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No test attempts found.</p>
-        )}
-      </section>
+      <Navbar />
+    <div className="dashboard-container">
+      <h2>My Created Tests</h2>
+      {tests.length === 0 ? (
+        <p>No tests created yet.</p>
+      ) : (
+        <ul className="test-list">
+          {tests.map((test) => (
+            <li key={test.id} className="test-card">
+              <h3>{test.title || 'Untitled Test'}</h3>
+              <p>{test.description}</p>
+              <div className="test-actions">
+                <button onClick={() => handleEdit(test.id)}>✏️ Edit</button>
+                <button onClick={() => handleDelete(test.id)}>🗑️ Delete</button>
+                <button onClick={() => handleShare(test.id)}>🔗 Share</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
     </div>
   );

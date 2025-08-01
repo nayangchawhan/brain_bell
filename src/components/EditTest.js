@@ -3,13 +3,12 @@ import React, { useState } from 'react';
 import './CreateTest.css';
 import { db, auth } from '../firebase';
 import { ref, push } from 'firebase/database';
-import Navbar from './Navbar';
 
 const CreateTest = () => {
   const [testTitle, setTestTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [testDuration, setTestDuration] = useState('');
-  const [minQuestions, setMinQuestions] = useState(''); // ➕ New state
+  const [duration, setDuration] = useState('');
+  const [minQuestions, setMinQuestions] = useState('');
   const [questions, setQuestions] = useState([
     { question: '', options: ['', '', '', ''], correct: 0 }
   ]);
@@ -31,43 +30,41 @@ const CreateTest = () => {
   };
 
   const addQuestion = () => {
-    setQuestions([
-      ...questions,
-      { question: '', options: ['', '', '', ''], correct: 0 }
-    ]);
+    setQuestions([...questions, { question: '', options: ['', '', '', ''], correct: 0 }]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const uid = auth.currentUser?.uid;
-    if (!uid) return alert('Please login first');
+    if (!uid) return alert("Please login first");
 
     if (parseInt(minQuestions) > questions.length) {
-      return alert('Minimum questions cannot be more than total questions.');
+      alert("Minimum number of questions cannot be more than total questions");
+      return;
     }
 
     const testData = {
       title: testTitle,
       description,
-      duration: testDuration,
-      minQuestions: parseInt(minQuestions), // ➕ Include in test data
+      duration,
+      minQuestions: parseInt(minQuestions),
       questions,
       createdBy: uid,
       createdAt: Date.now()
     };
 
     await push(ref(db, `tests/${uid}`), testData);
-    alert('✅ Test created successfully!');
+    alert("Test created successfully!");
+    
+    // Reset form
     setTestTitle('');
     setDescription('');
-    setTestDuration('');
+    setDuration('');
     setMinQuestions('');
     setQuestions([{ question: '', options: ['', '', '', ''], correct: 0 }]);
   };
 
   return (
-    <div>
-        <Navbar/>
     <div className="create-test-container">
       <h2>Create a New Test</h2>
       <form onSubmit={handleSubmit}>
@@ -86,16 +83,14 @@ const CreateTest = () => {
         />
         <input
           type="number"
-          placeholder="Test Duration (in minutes)"
-          value={testDuration}
-          onChange={(e) => setTestDuration(e.target.value)}
+          placeholder="Test Duration in minutes"
+          value={duration}
+          onChange={(e) => setDuration(e.target.value)}
           required
         />
-
-        {/* ➕ Minimum Questions Input */}
         <input
           type="number"
-          placeholder="Minimum Questions to Display"
+          placeholder="Minimum Questions to be Asked"
           value={minQuestions}
           onChange={(e) => setMinQuestions(e.target.value)}
           required
@@ -107,9 +102,7 @@ const CreateTest = () => {
               type="text"
               placeholder={`Question ${i + 1}`}
               value={q.question}
-              onChange={(e) =>
-                handleQuestionChange(i, 'question', e.target.value)
-              }
+              onChange={(e) => handleQuestionChange(i, 'question', e.target.value)}
               required
             />
             {q.options.map((opt, j) => (
@@ -118,9 +111,7 @@ const CreateTest = () => {
                   type="text"
                   placeholder={`Option ${j + 1}`}
                   value={opt}
-                  onChange={(e) =>
-                    handleQuestionChange(i, j, e.target.value)
-                  }
+                  onChange={(e) => handleQuestionChange(i, j, e.target.value)}
                   required
                 />
                 <input
@@ -128,7 +119,7 @@ const CreateTest = () => {
                   name={`correct-${i}`}
                   checked={q.correct === j}
                   onChange={() => handleCorrectOptionChange(i, j)}
-                  title="Mark as correct"
+                  title="Correct answer"
                 />
               </div>
             ))}
@@ -143,7 +134,6 @@ const CreateTest = () => {
           ✅ Create Test
         </button>
       </form>
-    </div>
     </div>
   );
 };

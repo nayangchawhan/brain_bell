@@ -1,0 +1,41 @@
+.dashboard-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+}
+
+.test-list {
+  list-style: none;
+  padding: 0;
+}
+
+.test-card {
+  border: 1px solid #ddd;
+  background: #f9f9f9;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+}
+
+.test-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.test-actions button {
+  padding: 6px 12px;
+  border: none;
+  background: #4caf50;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.test-actions button:nth-child(2) {
+  background: #f44336;
+}
+
+.test-actions button:nth-child(3) {
+  background: #2196f3;
+}
