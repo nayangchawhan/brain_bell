@@ -41,46 +41,54 @@ const Dashboard = () => {
     navigate(`/edit-test/${testId}`);
   };
 
-  const handleDownloadPDF = async (test) => {
+const handleDownloadPDF = async (test) => {
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage();
+  let page = pdfDoc.addPage();
   const { width, height } = page.getSize();
-  // 👇 Load Unicode font (ensure the path is correct)
-  const fontBytes = await fetch('/fonts/NotoSansDevanagari-Regular.ttf').then(res => res.arrayBuffer());
-  const unicodeFont = await pdfDoc.embedFont(fontBytes);
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontSize = 12;
 
   let y = height - 40;
+
+  const addNewPage = () => {
+    page = pdfDoc.addPage();
+    y = height - 40;
+  };
+
+  // Header Information
   page.drawText(`Title: ${test.title || 'Untitled Test'}`, { x: 50, y, size: 16, font });
-
   y -= 30;
+
+  if (y < 60) addNewPage();
   page.drawText(`Description: ${test.description || 'N/A'}`, { x: 50, y, size: fontSize, font });
-
   y -= 25;
-  page.drawText(`Duration: ${test.duration || 'N/A'} minutes`, { x: 50, y, size: fontSize, font });
 
+  if (y < 60) addNewPage();
+  page.drawText(`Duration: ${test.duration || 'N/A'} minutes`, { x: 50, y, size: fontSize, font });
   y -= 30;
 
-  test.questions?.forEach((q, index) => {
-    if (y < 80) {
-      page = pdfDoc.addPage();
-      y = height - 40;
-    }
+  // Questions and Options
+  for (let index = 0; index < test.questions?.length; index++) {
+    const q = test.questions[index];
+
+    if (y < 80) addNewPage();
 
     page.drawText(`Q${index + 1}. ${q.question}`, { x: 50, y, size: fontSize, font });
     y -= 20;
 
-    q.options.forEach((opt, i) => {
-      const label = String.fromCharCode(65 + i); // A, B, C, D...
+    for (let i = 0; i < q.options.length; i++) {
+      const label = String.fromCharCode(65 + i); // A, B, C, D
       const isCorrect = q.correct === i;
-      page.drawText(`${label}. ${opt} ${isCorrect ? '(C)' : ''}`, { x: 70, y, size: fontSize, font });
+      const optionText = `${label}. ${q.options[i]}${isCorrect ? ' (Correct)' : ''}`;
+      page.drawText(optionText, { x: 70, y, size: fontSize, font });
       y -= 18;
-    });
+
+      if (y < 60) addNewPage();
+    }
 
     y -= 10;
-  });
+  }
 
   const pdfBytes = await pdfDoc.save();
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
@@ -106,36 +114,53 @@ const handleDownloadResults = async (test) => {
   const resultsData = snapshot.val();
 
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage();
+  let page = pdfDoc.addPage();
   const { width, height } = page.getSize();
-    //Load Unicode font (ensure the path is correct)
+
+  // Load Unicode font (ensure the font path is correct in /public/fonts)
   const fontBytes = await fetch('/fonts/NotoSansDevanagari-Regular.ttf').then(res => res.arrayBuffer());
   const unicodeFont = await pdfDoc.embedFont(fontBytes);
 
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontSize = 12;
-
   let y = height - 40;
-  page.drawText(`Test Results: ${test.title || 'Untitled Test'}`, { x: 50, y, size: 16, font });
+
+  // Title
+  page.drawText(`Test Results: ${test.title || 'Untitled Test'}`, {
+    x: 50,
+    y,
+    size: 16,
+    font: unicodeFont,
+  });
+
   y -= 30;
 
   // Table Headers
-  page.drawText("No", { x: 50, y, size: fontSize, font });
-  page.drawText("Attender", { x: 90, y, size: fontSize, font });
-  page.drawText("Obtained", { x: 300, y, size: fontSize, font });
-  page.drawText("Total", { x: 400, y, size: fontSize, font });
+  page.drawText("No", { x: 50, y, size: fontSize, font: unicodeFont });
+  page.drawText("Attender", { x: 90, y, size: fontSize, font: unicodeFont });
+  page.drawText("Obtained", { x: 300, y, size: fontSize, font: unicodeFont });
+  page.drawText("Total", { x: 400, y, size: fontSize, font: unicodeFont });
+
   y -= 20;
 
   Object.values(resultsData).forEach((result, index) => {
+    // If we reach the bottom of the page, add a new one
     if (y < 50) {
-      const newPage = pdfDoc.addPage();
+      page = pdfDoc.addPage();
       y = height - 40;
+
+      // Repeat table headers on new page
+      page.drawText("No", { x: 50, y, size: fontSize, font: unicodeFont });
+      page.drawText("Attender", { x: 90, y, size: fontSize, font: unicodeFont });
+      page.drawText("Obtained", { x: 300, y, size: fontSize, font: unicodeFont });
+      page.drawText("Total", { x: 400, y, size: fontSize, font: unicodeFont });
+
+      y -= 20;
     }
 
-    page.drawText(`${index + 1}`, { x: 50, y, size: fontSize, font });
-    page.drawText(`${result.attenderName || 'N/A'}`, { x: 90, y, size: fontSize, font });
-    page.drawText(`${result.score}`, { x: 300, y, size: fontSize, font });
-    page.drawText(`${result.total}`, { x: 400, y, size: fontSize, font });
+    page.drawText(`${index + 1}`, { x: 50, y, size: fontSize, font: unicodeFont });
+    page.drawText(`${result.attenderName || 'N/A'}`, { x: 90, y, size: fontSize, font: unicodeFont });
+    page.drawText(`${result.score}`, { x: 300, y, size: fontSize, font: unicodeFont });
+    page.drawText(`${result.total}`, { x: 400, y, size: fontSize, font: unicodeFont });
 
     y -= 18;
   });
