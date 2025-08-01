@@ -52,7 +52,7 @@ const handleDownloadPDF = async (test) => {
   const { width, height } = page.getSize();
 
   // ✅ Load Unicode font
-  const fontBytes = await fetch('/fonts/NotoSansDevanagari-Regular.ttf').then(res => res.arrayBuffer());
+  const fontBytes = await fetch('/fonts/Mangal.ttf').then(res => res.arrayBuffer());
   const unicodeFont = await pdfDoc.embedFont(fontBytes);
 
   const fontSize = 12;
@@ -115,7 +115,7 @@ const handleDownloadResults = async (test) => {
     alert("Invalid test ID");
     return;
   }
-
+  pdfDoc.registerFontkit(fontkit);
   const resultsRef = ref(db, `results/${testId}`);
   const snapshot = await get(resultsRef);
 
