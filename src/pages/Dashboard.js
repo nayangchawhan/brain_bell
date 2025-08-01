@@ -115,7 +115,7 @@ const handleDownloadResults = async (test) => {
     alert("Invalid test ID");
     return;
   }
-  pdfDoc.registerFontkit(fontkit);
+ 
   const resultsRef = ref(db, `results/${testId}`);
   const snapshot = await get(resultsRef);
 
@@ -127,6 +127,9 @@ const handleDownloadResults = async (test) => {
   const resultsData = snapshot.val();
 
   const pdfDoc = await PDFDocument.create();
+
+  pdfDoc.registerFontkit(fontkit);
+
   let page = pdfDoc.addPage();
   const { width, height } = page.getSize();
 
