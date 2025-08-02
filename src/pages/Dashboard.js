@@ -208,7 +208,7 @@ const handleDownloadResults = async (test) => {
             <li key={test.id} className="test-card">
               <h3>{test.title || 'Untitled Test'}</h3>
               <button onClick={() => handleEdit(test.id)} style={{marginRight:'10px'}}><CiEdit />Edit</button>
-              <button onClick={() => handleDelete(test.id)} style={{backgroundColor:'reb'}}><MdDeleteOutline /> Delete</button>
+              <button onClick={() => handleDelete(test.id)} style={{backgroundColor:'red'}}><MdDeleteOutline /> Delete</button>
               <p>{test.description}</p>
               <div className="test-actions">
                 <button onClick={() => handleShare(test.id)}><FaRegShareSquare /> Share</button>
