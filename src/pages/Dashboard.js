@@ -212,7 +212,7 @@ const handleDownloadResults = async (test) => {
               <p>{test.description}</p>
               <div className="test-actions">
                 <button onClick={() => handleShare(test.id)}><FaRegShareSquare /> Share</button>
-                <button onClick={() => handleDownloadPDF(test)} style={{backgroundColor:'blue'}}><MdOutlineFileDownload /> Download PDF</button>
+                <button onClick={() => handleDownloadPDF(test)} style={{backgroundColor:'#2196f3'}}><MdOutlineFileDownload /> Download PDF</button>
                 <button onClick={() => handleDownloadResults(test)}><MdOutlineFileDownload />Download Results</button>
               </div>
             </li>
