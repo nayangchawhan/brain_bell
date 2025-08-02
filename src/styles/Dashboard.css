@@ -39,3 +39,19 @@
 .test-actions button:nth-child(3) {
   background: #2196f3;
 }
+
+@media screen and (max-width: 600px) {
+  .dashboard-container {
+    padding: 10px;
+  }
+
+  .test-card {
+    padding: 10px;
+  }
+
+  .test-actions button {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  
+}
