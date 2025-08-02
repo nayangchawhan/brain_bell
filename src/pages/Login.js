@@ -57,7 +57,7 @@ const Login = () => {
       </button>
       <button onClick={handleGoogleLogin} disabled={loading}>
         <FcGoogle />
-        {loading ? 'Please wait...' : 'Sign in with Google'}
+        {loading ? 'Please wait...' : '  Sign in with Google'}
       </button>
       <p onClick={() => !loading && navigate('/signup')}>
         Don't have an account? Sign up
