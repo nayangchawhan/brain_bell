@@ -1,0 +1,106 @@
+.ai-survey {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+.ai-survey h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.ai-survey textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  font-size: 1rem;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.ai-survey button {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 20px;
+  margin-top: 10px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.ai-survey button:hover {
+  background-color: #0056b3;
+}
+
+.ai-survey button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.ai-survey h3 {
+  margin-top: 30px;
+  font-size: 1.5rem;
+  color: #444;
+}
+
+.question-box {
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  background-color: #f9f9f9;
+}
+
+.question-box input[type='text'],
+.question-box select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.question-box button {
+  background-color: #28a745;
+  margin-top: 5px;
+}
+
+.question-box button:hover {
+  background-color: #1e7e34;
+}
+
+.share-link {
+  margin-top: 30px;
+  background-color: #eef6ff;
+  padding: 15px;
+  border: 1px solid #cce0ff;
+  border-radius: 8px;
+}
+
+.share-link p {
+  margin: 0 0 10px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.share-link input {
+  width: 100%;
+  padding: 10px;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+}

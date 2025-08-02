@@ -23,6 +23,7 @@ const Navbar = () => {
       <div className={`navbar-links ${menuOpen ? 'active' : ''}`}>
         <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
         <Link to="/create-test" onClick={() => setMenuOpen(false)}>Create Test</Link>
+        <Link to="/ai-survey" onClick={() => setMenuOpen(false)}>Create survey</Link>
         <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </div>
 
