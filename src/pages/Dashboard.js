@@ -207,7 +207,7 @@ const handleDownloadResults = async (test) => {
           {tests.map((test) => (
             <li key={test.id} className="test-card">
               <h3>{test.title || 'Untitled Test'}</h3>
-              <button onClick={() => handleEdit(test.id)}><CiEdit />Edit</button>
+              <button onClick={() => handleEdit(test.id)} style={{marginLeft:'2px'}}><CiEdit />Edit</button>
               <button onClick={() => handleDelete(test.id)}><MdDeleteOutline /> Delete</button>
               <p>{test.description}</p>
               <div className="test-actions">
