@@ -52,6 +52,7 @@
   .test-actions button {
     width: 100%;
     margin-bottom: 5px;
+    scale: 0.9;
   }
   
 }
