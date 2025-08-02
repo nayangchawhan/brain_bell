@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { ref, get, push, set } from 'firebase/database';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { FaRegClock } from "react-icons/fa";
 import '../styles/AttendTest.css';
 
 const AttendTest = () => {
@@ -197,7 +198,7 @@ const AttendTest = () => {
         <>
           <div className="attend-header">
             <h2>{test.title}</h2>
-            <div className="timer">🕒 Time Left: {formatTime(timeLeft)}</div>
+            <div className="timer"><FaRegClock /> Time Left: {formatTime(timeLeft)}</div>
             <p>
               Attender: <strong>{attenderName}</strong>
             </p>
