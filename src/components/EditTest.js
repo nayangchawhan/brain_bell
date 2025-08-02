@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getDatabase, ref, get, update } from 'firebase/database';
 import Navbar from './Navbar';
+import { TiDeleteOutline } from "react-icons/ti";
+import { IoIosAddCircleOutline } from "react-icons/io";
+import { MdOutlineDelete } from "react-icons/md";
+import { TfiSave } from "react-icons/tfi";
 import "./EditTest.css";
 
 const EditTest = () => {
@@ -132,12 +136,12 @@ const EditTest = () => {
                   onChange={(e) => handleInputChange(e, i, 'option', j)}
                 />
                 {q.options.length > 2 && (
-                  <button onClick={() => deleteOption(i, j)}>❌</button>
+                  <button onClick={() => deleteOption(i, j)}><TiDeleteOutline /></button>
                 )}
               </div>
             ))}
 
-            <button onClick={() => addOption(i)}>➕ Add Option</button>
+            <button onClick={() => addOption(i)}><IoIosAddCircleOutline /> Add Option</button>
 
             <label>Correct Option (Index: 0-based)</label>
             <input
@@ -148,14 +152,14 @@ const EditTest = () => {
               max={q.options.length - 1}
             />
 
-            <button className="delete-btn" onClick={() => deleteQuestion(i)}>🗑️ Delete Question</button>
+            <button className="delete-btn" onClick={() => deleteQuestion(i)}><MdOutlineDelete /> Question</button>
             <hr />
           </div>
         ))}
 
-        <button className="add-btn" onClick={addQuestion}>➕ Add New Question</button>
+        <button className="add-btn" onClick={addQuestion}><IoIosAddCircleOutline /> Add New Question</button>
         <br />
-        <button className="save-btn" onClick={handleSave}>💾 Save Changes</button>
+        <button className="save-btn" onClick={handleSave}><TfiSave /> Save Changes</button>
       </div>
     </div>
   );
