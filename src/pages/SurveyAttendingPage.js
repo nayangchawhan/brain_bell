@@ -44,7 +44,7 @@ const SurveyAttendingPage = () => {
     <div className="survey-attend">
       <h2>{survey.title}</h2>
       {survey.questions?.map((q, index) => (
-        <div className="question" key={index}>
+        <div className="question" key={index} style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
           <label>{q.question}</label>
 
           {q.type === 'short_answer' && (
@@ -56,7 +56,8 @@ const SurveyAttendingPage = () => {
           )}
 
           {q.type === 'multiple_choice' && q.options?.map((opt, i) => (
-            <div key={i}>
+            <label key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', justifyContent: 'space-between' , border: '1px solid #ccc', padding: '8px', borderRadius: '4px'}}>
+              {opt}
               <input
                 type="radio"
                 name={`question-${index}`}
@@ -64,8 +65,7 @@ const SurveyAttendingPage = () => {
                 checked={responses[index] === opt}
                 onChange={() => handleChange(index, opt)}
               />
-              <label>{opt}</label>
-            </div>
+            </label>
           ))}
 
           {q.type === 'rating_scale' && (
