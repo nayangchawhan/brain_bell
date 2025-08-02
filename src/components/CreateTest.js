@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import './CreateTest.css';
 import { db, auth } from '../firebase';
 import { ref, push } from 'firebase/database';
+import { MdOutlineCreateNewFolder } from "react-icons/md";
+import { IoIosAddCircleOutline } from "react-icons/io";
 import Navbar from './Navbar';
 
 const CreateTest = () => {
@@ -136,11 +138,11 @@ const CreateTest = () => {
         ))}
 
         <button type="button" className="add-btn" onClick={addQuestion}>
-          ➕ Add Question
+          <IoIosAddCircleOutline /> Add Question
         </button>
 
         <button type="submit" className="submit-btn">
-          ✅ Create Test
+          <MdOutlineCreateNewFolder /> Create Test
         </button>
       </form>
     </div>
