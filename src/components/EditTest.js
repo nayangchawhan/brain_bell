@@ -136,7 +136,7 @@ const EditTest = () => {
                   onChange={(e) => handleInputChange(e, i, 'option', j)}
                 />
                 {q.options.length > 2 && (
-                  <button onClick={() => deleteOption(i, j)}><TiDeleteOutline /></button>
+                  <button onClick={() => deleteOption(i, j)}><TiDeleteOutline color='red'/></button>
                 )}
               </div>
             ))}
