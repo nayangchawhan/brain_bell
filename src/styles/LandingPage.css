@@ -1,47 +1,130 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f9f9ff;
+  color: #333;
+}
+
 .landing-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #6f42c1, #1e1e2f);
+}
+
+/* Hero Section */
+.hero {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
   color: white;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.content {
+  width: 100%;
+  padding: 80px 20px;
   text-align: center;
-  padding: 20px;
 }
 
-h1 {
+.hero h1 {
   font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.hero .highlight {
+  color: #ffee58;
+}
+
+.hero p {
+  font-size: 1.3rem;
+  margin-bottom: 30px;
+}
+
+.primary-btn {
+  background-color: #ffee58;
+  color: #333;
+  font-weight: bold;
+  padding: 14px 32px;
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.primary-btn:hover {
+  background-color: #fff176;
+}
+
+/* Features Section */
+.features {
+  padding: 60px 20px;
+  max-width: 1200px;
+  width: 100%;
+  text-align: center;
+}
+
+.features h2 {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: #333;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 30px;
+}
+
+.feature-card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+}
+
+.feature-card i {
+  font-size: 2rem;
+  color: #2575fc;
+  margin-bottom: 15px;
+}
+
+.feature-card h3 {
+  font-size: 1.3rem;
   margin-bottom: 10px;
 }
 
-p {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-  color: #000000;
+.feature-card p {
+  font-size: 1rem;
+  color: #666;
 }
 
-.buttons {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
+/* Footer */
+.footer {
+  background: #1a1a1a;
+  color: #ccc;
+  text-align: center;
+  padding: 20px 10px;
+  margin-top: 40px;
+  width: 100%;
 }
 
-button {
-  background-color: #ffffff;
-  color: #6f42c1;
-  padding: 12px 25px;
-  border: none;
-  border-radius: 25px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+/* Responsive */
+@media screen and (max-width: 600px) {
+  .hero h1 {
+    font-size: 2.2rem;
+  }
 
-button:hover {
-  background-color: #dcdcdc;
-  transform: scale(1.05);
+  .hero p {
+    font-size: 1.1rem;
+  }
+
+  .primary-btn {
+    width: 90%;
+  }
+
+  .feature-card {
+    padding: 20px;
+  }
 }

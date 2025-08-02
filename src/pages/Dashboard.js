@@ -8,7 +8,7 @@ import { PDFDocument } from 'pdf-lib';
 import { saveAs } from 'file-saver';
 import * as fontkit from 'fontkit';
 import { CiEdit } from "react-icons/ci";
-import { MdDeleteOutline, MdOutlineFileDownload } from "react-icons/md";
+import { MdDeleteOutline, MdOutlineFileDownload , MdOutlineViewTimeline } from "react-icons/md";
 import { FaRegShareSquare } from "react-icons/fa";
 
 const Dashboard = () => {
@@ -60,6 +60,17 @@ const Dashboard = () => {
     remove(testRef);
   };
 
+  const handleDeleteSurvey = (surveyId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this survey?");
+    if (!confirmDelete) return;
+
+    const surveyRef = ref(db, `surveys/${surveyId}`);
+    remove(surveyRef)
+      .then(() => alert("Survey deleted successfully."))
+      .catch((err) => alert("Error deleting survey: " + err.message));
+  };
+
+
   const handleEdit = (testId) => {
     navigate(`/edit-test/${testId}`);
   };
@@ -68,6 +79,12 @@ const Dashboard = () => {
     const link = `${window.location.origin}/attend-test/${testId}`;
     navigator.clipboard.writeText(link);
     alert('Test link copied to clipboard!');
+  };
+
+  const handlesurveyShare = (surveyId) => {
+    const link = `${window.location.origin}/survey/${surveyId}`;
+    navigator.clipboard.writeText(link);
+    alert('Survey link copied to clipboard!');
   };
 
   const handleViewSurveyResponses = (surveyId) => {
@@ -181,7 +198,7 @@ const Dashboard = () => {
       <div className="dashboard-container">
 
         {/* Tests Section */}
-        <h2>🧪 My Created Tests</h2>
+        <h2>My Created Tests</h2>
         {tests.length === 0 ? (
           <p>No tests created yet.</p>
         ) : (
@@ -211,7 +228,7 @@ const Dashboard = () => {
         )}
 
         {/* Surveys Section */}
-        <h2>📝 My Created Surveys</h2>
+        <h2>My Created Surveys</h2>
         {surveys.length === 0 ? (
           <p>No surveys created yet.</p>
         ) : (
@@ -219,9 +236,16 @@ const Dashboard = () => {
             {surveys.map((survey) => (
               <li key={survey.id} className="test-card">
                 <h3>{survey.title || 'Untitled Survey'}</h3>
+                <button
+                  onClick={() => handleDeleteSurvey(survey.id)}
+                  style={{ backgroundColor: 'red' }}
+                >
+                  <MdDeleteOutline /> Delete
+                </button>
                 <div className="test-actions">
-                  <button onClick={() => handleViewSurveyResponses(survey.id)}>
-                    <MdOutlineFileDownload /> View Responses
+                  <button onClick={() => handlesurveyShare(survey.id)} ><FaRegShareSquare /> Share</button>
+                  <button onClick={() => handleViewSurveyResponses(survey.id)} style={{backgroundColor:'#2196f3'}}>
+                    <MdOutlineViewTimeline /> View Responses
                   </button>
                 </div>
               </li>
