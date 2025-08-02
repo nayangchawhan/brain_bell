@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { FcGoogle } from "react-icons/fc";
 import '../styles/Auth.css';
 
 const Login = () => {
@@ -55,6 +56,7 @@ const Login = () => {
         {loading ? 'Logging in...' : 'Login'}
       </button>
       <button onClick={handleGoogleLogin} disabled={loading}>
+        <FcGoogle />
         {loading ? 'Please wait...' : 'Sign in with Google'}
       </button>
       <p onClick={() => !loading && navigate('/signup')}>
