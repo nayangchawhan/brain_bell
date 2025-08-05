@@ -6,6 +6,7 @@ import axios from 'axios';
 import '../styles/AISurveyCreator.css';
 import Navbar from '../components/Navbar';
 
+const Google_api_key=process.env.Google_API_key;
 const AISurveyCreator = () => {
   const [requirement, setRequirement] = useState('');
   const [questions, setQuestions] = useState([]);
@@ -45,7 +46,7 @@ const AISurveyCreator = () => {
 Do not include short_answer type. Only return valid JSON.`;
 
       const res = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyCGkiWXnho1GdadfInKnblARPm-RXLu9FU`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=Google_API_key`,
         {
           contents: [{ parts: [{ text: prompt }] }],
         }
