@@ -16,7 +16,7 @@
 }
 
 .ai-survey textarea {
-  width: 100%;
+  width: 95%;
   min-height: 120px;
   padding: 12px;
   font-size: 1rem;
@@ -64,7 +64,7 @@
 
 .question-box input[type='text'],
 .question-box select {
-  width: 100%;
+  width: 95%;
   padding: 10px;
   margin-top: 10px;
   margin-bottom: 15px;
