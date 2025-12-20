@@ -46,7 +46,7 @@ const AISurveyCreator = () => {
 Do not include short_answer type. Only return valid JSON.`;
 
       const res = await axios.post(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GOOGLE_API_KEY}`,
+        `https://generativeai.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_API_KEY}`,
         {
           contents: [{ parts: [{ text: prompt }] }],
         }
